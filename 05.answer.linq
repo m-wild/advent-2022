@@ -3,18 +3,20 @@
 var file = Path.Combine(Path.GetDirectoryName(Util.CurrentQueryPath), "05.input.txt");
 var input = File.ReadAllText(file);
 
-var puzzle = input.Split(Environment.NewLine + Environment.NewLine)[0].Split(Environment.NewLine);
-var cmds = input.Split(Environment.NewLine + Environment.NewLine)[1].Split(Environment.NewLine);
+var puzzle = input.Split("\r\n\r\n")[0].Split("\r\n");
+var cmds = input.Split("\r\n\r\n")[1].Split("\r\n");
 
 var parsePuzzle = () =>
 {
-	var stacks = Enumerable.Range(1, (int)Math.Ceiling(puzzle[0].Length / 4.0))
-		.ToDictionary(x => x, _ => new List<char>());
+	var stacks = puzzle.Last()
+		.Chunk(4)
+		.ToDictionary(x => int.Parse(new string(x).Trim()), _ => new List<char>());
 
-	foreach (var x in puzzle.TakeWhile(x => x.Contains('[')))
-	for (int i = 0, j = 1; i < stacks.Count * 4; i += 4, j++)
-		if (x[i + 1] != ' ') stacks[j].Insert(0, x[i + 1]);
-	
+	foreach (var row in puzzle.Reverse().Skip(1))
+	foreach (var (crate, i) in row.Chunk(4).Select((x, i) => (new string(x).Trim().TrimStart('[').TrimEnd(']'), i)))
+	if (crate != "") 
+		stacks[i + 1].Add(crate[0]);
+
 	return stacks;
 };
 
